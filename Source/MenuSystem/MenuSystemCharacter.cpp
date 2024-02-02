@@ -1,7 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "MenuSystemCharacter.h"
-#include "Interfaces/OnlineSessionInterface.h"
+#include "OnlineSessionSettings.h"
 #include "OnlineSubsystem.h"
 #include "Engine/LocalPlayer.h"
 #include "Camera/CameraComponent.h"
@@ -18,8 +18,15 @@ DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 //////////////////////////////////////////////////////////////////////////
 // AMenuSystemCharacter
 
-AMenuSystemCharacter::AMenuSystemCharacter()
+AMenuSystemCharacter::AMenuSystemCharacter():
+	// Create delegate and bind callback function
+	CreateSessionCompleteDelegate(FOnCreateSessionCompleteDelegate::CreateUObject(this, &AMenuSystemCharacter::OnCreateSessionComplete))
 {
+
+
+
+
+
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 		
@@ -62,7 +69,11 @@ AMenuSystemCharacter::AMenuSystemCharacter()
 
 		if (GEngine)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Blue, FString::Printf(TEXT("Found Subsystem: %s"), *OnlineSubsystem->GetSubsystemName().ToString()));
+			GEngine->AddOnScreenDebugMessage(-1, 
+				15.f, 
+				FColor::Blue, 
+				FString::Printf(TEXT("Found Subsystem: %s"), 
+					*OnlineSubsystem->GetSubsystemName().ToString()));
 		}
 	}
 }
@@ -81,6 +92,77 @@ void AMenuSystemCharacter::BeginPlay()
 		}
 	}
 }
+
+
+
+
+
+
+void AMenuSystemCharacter::CreateGameSession()
+{
+	/* Called when pressing the 1 key */
+	if (!OnlineSessionInterface.IsValid())
+	{
+		return;
+	}
+
+	// We can't create a new session if one already exists -- must destroy
+	auto ExistingSession = OnlineSessionInterface->GetNamedSession(NAME_GameSession);
+	if (ExistingSession != nullptr)
+	{
+		OnlineSessionInterface->DestroySession(NAME_GameSession);
+	}
+	
+	OnlineSessionInterface->AddOnCreateSessionCompleteDelegate_Handle(CreateSessionCompleteDelegate);
+
+	// Calls constructor for type FOnlineSessionSettings and MakeSharable() will wrap it up in a TSharedPtr
+	TSharedPtr<FOnlineSessionSettings> SessionSettings = MakeShareable(new FOnlineSessionSettings());
+	SessionSettings->bIsLANMatch = false;
+	SessionSettings->NumPublicConnections = 4;
+	SessionSettings->bAllowJoinInProgress = true;
+	SessionSettings->bAllowJoinViaPresence = true;
+	SessionSettings->bShouldAdvertise = true;
+	SessionSettings->bUsesPresence = true;
+
+	// ULocalPlayer allows us to get a unique net ID for CreateSession()
+	const ULocalPlayer* LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
+	OnlineSessionInterface->CreateSession(*LocalPlayer->GetPreferredUniqueNetId(), NAME_GameSession, *SessionSettings);
+}
+
+void AMenuSystemCharacter::OnCreateSessionComplete(FName SessionName, bool bWasSuccessful)
+{
+	/* Callback for the delegate 'CreateSessionCompleteDelegate' */
+	if (bWasSuccessful)
+	{
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(
+				-1,
+				15.f,
+				FColor::Blue,
+				FString::Printf(TEXT("Successfully created session: %s"), *SessionName.ToString())
+			);
+		}
+	}
+	else 
+	{
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(
+				-1,
+				15.f,
+				FColor::Red,
+				FString(TEXT("Failed to create session!"))
+			);
+		}
+
+	}
+}
+
+
+
+
+
 
 //////////////////////////////////////////////////////////////////////////
 // Input

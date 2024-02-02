@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Interfaces/OnlineSessionInterface.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
 #include "MenuSystemCharacter.generated.h"
@@ -74,10 +75,19 @@ public:
 	/*
 	 * Session related code
 	 */
-
 	// Pointer to the online session interface
-	// Below doesn't work, since it's threadsafe
+	// Below doesn't work, since it's typedef, unless you include its header
 	// IOnlineSessionPtr OnlineSessionInterface;
 	TSharedPtr<class IOnlineSession, ESPMode::ThreadSafe> OnlineSessionInterface;
+
+protected:
+	UFUNCTION(BlueprintCallable)
+	void CreateGameSession();
+
+	void OnCreateSessionComplete(FName SessionName, bool bWasSuccessful);
+
+private:
+	FOnCreateSessionCompleteDelegate CreateSessionCompleteDelegate;
+
 };
 
