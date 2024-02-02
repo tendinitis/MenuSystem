@@ -69,5 +69,15 @@ public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+public:
+	/*
+	 * Session related code
+	 */
+
+	// Pointer to the online session interface
+	// Below doesn't work, since it's threadsafe
+	// IOnlineSessionPtr OnlineSessionInterface;
+	TSharedPtr<class IOnlineSession, ESPMode::ThreadSafe> OnlineSessionInterface;
 };
 
