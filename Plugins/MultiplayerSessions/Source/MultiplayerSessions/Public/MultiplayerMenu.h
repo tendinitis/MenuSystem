@@ -16,4 +16,25 @@ class MULTIPLAYERSESSIONS_API UMultiplayerMenu : public UUserWidget
 public:
 	UFUNCTION(BlueprintCallable)
 	void MenuSetup();
+
+protected:
+	virtual bool Initialize() override;
+
+private:
+	/* The meta specifier BindWidget means that our button widget in our BP, will be linked to our button
+	 * var in C++. Names MUST match!
+	 */
+	UPROPERTY(meta = (BindWidget))
+	class UButton* HostButton;
+	UPROPERTY(meta = (BindWidget))
+	UButton* JoinButton;
+
+	UFUNCTION()
+	void HostButtonClicked();
+
+	UFUNCTION()
+	void JoinButtonClicked();
+
+	// The subsystem designed to handle all online session functionality
+	class UMultiplayerSessionsSubsystem* MultiplayerSessionsSubsystem;
 };
