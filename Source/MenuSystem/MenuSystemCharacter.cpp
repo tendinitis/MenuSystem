@@ -227,6 +227,7 @@ void AMenuSystemCharacter::OnFindSessionsComplete(bool bWasSuccessful)
 				);
 			}
 
+			// Here is where we call the callback function OnJoinSessionComplete()
 			OnlineSessionInterface->AddOnJoinSessionCompleteDelegate_Handle(JoinSessionCompleteDelegate);
 
 			const ULocalPlayer* LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
@@ -256,6 +257,7 @@ void AMenuSystemCharacter::OnJoinSessionComplete(FName SessionName, EOnJoinSessi
 			);
 		}
 
+		// This is where we actually join the session
 		APlayerController* PlayerController = GetGameInstance()->GetFirstLocalPlayerController();
 		if (PlayerController)
 		{
