@@ -5,11 +5,13 @@
 #include "Components/Button.h"
 #include "MultiplayerMenu.h"
 
-void UMultiplayerMenu::MenuSetup()
+void UMultiplayerMenu::MenuSetup(int32 NumberOfPublicConnections, FString TypeOfMatch)
 {
+	NumPublicConnections = NumberOfPublicConnections;
+	MatchType = TypeOfMatch;
 	AddToViewport();
 	SetVisibility(ESlateVisibility::Visible);
-	bIsFocusable = true; // 'UUserWidget::bIsFocusable': Direct access to bIsFocusable is deprecated. Please use the getter. Note that this property is only set at construction and is not modifiable at runtime. Please update your code to the new API before upgrading to the next release, otherwise your project will no longer compile.
+	bIsFocusable = true; // UE5.3.2, Feb 3rd 2024 - 'UUserWidget::bIsFocusable': Direct access to bIsFocusable is deprecated. Please use the getter. Note that this property is only set at construction and is not modifiable at runtime. Please update your code to the new API before upgrading to the next release, otherwise your project will no longer compile.
 
 	UWorld* World = GetWorld();
 	if (World)
@@ -53,6 +55,13 @@ bool UMultiplayerMenu::Initialize()
 	return true;
 }
 
+void UMultiplayerMenu::NativeDestruct()
+{
+	MenuTearDown();
+
+	Super::NativeDestruct();
+}
+
 void UMultiplayerMenu::HostButtonClicked()
 {
 	if (GEngine)
@@ -68,6 +77,11 @@ void UMultiplayerMenu::HostButtonClicked()
 	if (MultiplayerSessionsSubsystem)
 	{
 		MultiplayerSessionsSubsystem->CreateSession(4, FString(TEXT("FreeForAll")));
+		UWorld* World = GetWorld();
+		if (World)
+		{
+			World->ServerTravel(FString("/Game/ThirdPerson/Maps/Lobby?listen"));
+		}
 	}
 }
 
@@ -81,5 +95,22 @@ void UMultiplayerMenu::JoinButtonClicked()
 			FColor::Yellow, 
 			FString(TEXT("Join button clicked!"))
 		);
+	}
+}
+
+void UMultiplayerMenu::MenuTearDown()
+{
+	// Opposite of AddToViewport()
+	RemoveFromParent();
+	UWorld* World = GetWorld();
+	if (World)
+	{
+		APlayerController* PlayerController = World->GetFirstPlayerController();
+		if (PlayerController)
+		{
+			FInputModeGameOnly InputModeData;
+			PlayerController->SetInputMode(InputModeData);
+			PlayerController->bShowMouseCursor = false;
+		}
 	}
 }

@@ -15,10 +15,11 @@ class MULTIPLAYERSESSIONS_API UMultiplayerMenu : public UUserWidget
 	GENERATED_BODY()
 public:
 	UFUNCTION(BlueprintCallable)
-	void MenuSetup();
+	void MenuSetup(int32 NumberOfPublicConnections = 4, FString TypeOfMatch = FString(TEXT("FreeForAll")));
 
 protected:
 	virtual bool Initialize() override;
+	virtual void NativeDestruct() override;
 
 private:
 	/* The meta specifier BindWidget means that our button widget in our BP, will be linked to our button
@@ -35,6 +36,11 @@ private:
 	UFUNCTION()
 	void JoinButtonClicked();
 
+	void MenuTearDown();
+
 	// The subsystem designed to handle all online session functionality
 	class UMultiplayerSessionsSubsystem* MultiplayerSessionsSubsystem;
+
+	int32 NumPublicConnections{ 4 };
+	FString MatchType{ TEXT("FreeForAll") };
 };
