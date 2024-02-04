@@ -75,8 +75,7 @@ AMenuSystemCharacter::AMenuSystemCharacter() :
 			GEngine->AddOnScreenDebugMessage(-1, 
 				15.f, 
 				FColor::Blue, 
-				FString::Printf(TEXT("Found Subsystem: %s"), 
-					*OnlineSubsystem->GetSubsystemName().ToString()));
+				FString::Printf(TEXT("Found Subsystem: %s"), *OnlineSubsystem->GetSubsystemName().ToString()));
 		}
 	}
 }
