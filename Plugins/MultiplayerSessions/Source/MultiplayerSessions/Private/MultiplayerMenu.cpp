@@ -74,14 +74,6 @@ void UMultiplayerMenu::NativeDestruct()
 	Super::NativeDestruct();
 }
 
-void UMultiplayerMenu::HostButtonClicked()
-{
-	if (MultiplayerSessionsSubsystem)
-	{
-		MultiplayerSessionsSubsystem->CreateSession(NumPublicConnections, MatchType);
-	}
-}
-
 void UMultiplayerMenu::OnCreateSession(bool bWasSuccessful)
 {
 	if (bWasSuccessful)
@@ -113,26 +105,8 @@ void UMultiplayerMenu::OnCreateSession(bool bWasSuccessful)
 				FString(TEXT("Failed to create session!"))
 			);
 		}
-	}
-}
 
-void UMultiplayerMenu::OnFindSessions(const TArray<FOnlineSessionSearchResult>& SessionResults, bool bWasSuccessful)
-{
-	if (MultiplayerSessionsSubsystem == nullptr)
-	{
-		return;
-	}
-
-	for (FOnlineSessionSearchResult Result : SessionResults)
-	{
-		FString SettingsValue;
-		Result.Session.SessionSettings.Get(FName("MatchType"), SettingsValue);
-		if (SettingsValue == MatchType)
-		{
-			// This means we join the first match that satisfies our search criteria
-			MultiplayerSessionsSubsystem->JoinSession(Result);
-			return;
-		}
+		HostButton->SetIsEnabled(true);
 	}
 }
 
@@ -146,6 +120,7 @@ void UMultiplayerMenu::OnStartSession(bool bWasSuccessful)
 
 void UMultiplayerMenu::JoinButtonClicked()
 {
+	JoinButton->SetIsEnabled(false);
 	if (MultiplayerSessionsSubsystem)
 	{
 		MultiplayerSessionsSubsystem->FindSessions(10000);
@@ -170,6 +145,45 @@ void UMultiplayerMenu::OnJoinSession(EOnJoinSessionCompleteResult::Type Result)
 				PlayerController->ClientTravel(Address, ETravelType::TRAVEL_Absolute);
 			}
 		}
+	}
+
+	if (Result != EOnJoinSessionCompleteResult::Success)
+	{
+		JoinButton->SetIsEnabled(true);
+	}
+}
+
+void UMultiplayerMenu::HostButtonClicked()
+{
+	HostButton->SetIsEnabled(false);
+	if (MultiplayerSessionsSubsystem)
+	{
+		MultiplayerSessionsSubsystem->CreateSession(NumPublicConnections, MatchType);
+	}
+}
+
+void UMultiplayerMenu::OnFindSessions(const TArray<FOnlineSessionSearchResult>& SessionResults, bool bWasSuccessful)
+{
+	if (MultiplayerSessionsSubsystem == nullptr)
+	{
+		return;
+	}
+
+	for (FOnlineSessionSearchResult Result : SessionResults)
+	{
+		FString SettingsValue;
+		Result.Session.SessionSettings.Get(FName("MatchType"), SettingsValue);
+		if (SettingsValue == MatchType)
+		{
+			// This means we join the first match that satisfies our search criteria
+			MultiplayerSessionsSubsystem->JoinSession(Result);
+			return;
+		}
+	}
+
+	if (!bWasSuccessful || SessionResults.Num() == 0)
+	{
+		JoinButton->SetIsEnabled(true);
 	}
 }
 
