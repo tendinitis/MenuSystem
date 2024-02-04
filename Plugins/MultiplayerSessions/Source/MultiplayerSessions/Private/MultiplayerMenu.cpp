@@ -7,8 +7,9 @@
 #include "Components/Button.h"
 #include "MultiplayerMenu.h"
 
-void UMultiplayerMenu::MenuSetup(int32 NumberOfPublicConnections, FString TypeOfMatch)
+void UMultiplayerMenu::MenuSetup(int32 NumberOfPublicConnections, FString TypeOfMatch, FString LobbyPath)
 {
+	PathToLobby = LobbyPath;
 	NumPublicConnections = NumberOfPublicConnections;
 	MatchType = TypeOfMatch;
 	AddToViewport();
@@ -98,7 +99,7 @@ void UMultiplayerMenu::OnCreateSession(bool bWasSuccessful)
 		UWorld* World = GetWorld();
 		if (World)
 		{
-			World->ServerTravel(FString("/Game/ThirdPerson/Maps/Lobby?listen"));
+			World->ServerTravel(FString::Printf(TEXT("%s?listen"), *PathToLobby));
 		}
 	}
 	else 
