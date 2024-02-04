@@ -136,6 +136,7 @@ void AMenuSystemCharacter::CreateGameSession()
 
 void AMenuSystemCharacter::JoinGameSession()
 {
+	// Find game sessions
 	if (!OnlineSessionInterface.IsValid())
 	{
 		return;

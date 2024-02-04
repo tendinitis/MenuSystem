@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Interfaces/OnlineSessionInterface.h"
 #include "Blueprint/UserWidget.h"
 #include "MultiplayerMenu.generated.h"
 
@@ -21,6 +22,20 @@ protected:
 	virtual bool Initialize() override;
 	virtual void NativeDestruct() override;
 
+	/*
+	 *	Callbacks for the custom delegates on the MultiplayerSessionsSubsystem
+	 *  Dynamic delegates NEEDS its callbacks to be UFUNCTIONS()!
+	 */
+
+	UFUNCTION()
+	void OnCreateSession(bool bWasSuccessful);
+	void OnFindSessions(const TArray<FOnlineSessionSearchResult>& SessionResults, bool bWasSuccessful);
+	void OnJoinSession(EOnJoinSessionCompleteResult::Type Result);
+	UFUNCTION()
+	void OnDestroySession(bool bWasSuccessful);
+	UFUNCTION()
+	void OnStartSession(bool bWasSuccessful);
+
 private:
 	/* The meta specifier BindWidget means that our button widget in our BP, will be linked to our button
 	 * var in C++. Names MUST match!
@@ -35,7 +50,6 @@ private:
 
 	UFUNCTION()
 	void JoinButtonClicked();
-
 	void MenuTearDown();
 
 	// The subsystem designed to handle all online session functionality
